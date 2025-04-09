@@ -51,7 +51,6 @@ public class AutoComplete {
         }
     }
 
-
     /**
      * Loads a file from the res folder.
      **/ 
