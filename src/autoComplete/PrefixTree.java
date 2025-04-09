@@ -2,6 +2,7 @@ package autoComplete;
 
 import java.util.ArrayList;
 import java.util.Map;
+import java.util.Stack;
 
 /**
  * A prefix tree used for autocompletion. The root of the tree just stores links to child nodes (up to 26, one per letter).
@@ -24,7 +25,21 @@ public class PrefixTree {
      * @param word
      */
     public void add(String word){
-        //TODO: complete me
+        TreeNode current = root;
+        for (int i = 0; i < word.length(); i++) {
+            char character = word.charAt(i);
+            
+            if (!current.children.containsKey(character)) {
+                TreeNode newNode = new TreeNode();
+                newNode.letter = character;
+                current.children.put(character, newNode);
+            }
+            current = current.children.get(character);
+        }
+        if (!current.isWord) {
+            current.isWord = true;
+            size++;
+        }
     }
 
     /**
@@ -33,8 +48,16 @@ public class PrefixTree {
      * @return true if contained in the tree.
      */
     public boolean contains(String word){
-        //TODO: complete me
-        return false;
+        TreeNode current = root;
+        for (int i = 0; i < word.length(); i++) {
+            char character = word.charAt(i);
+
+            if (!current.children.containsKey(character)) {
+                return false;
+            }
+            current = current.children.get(character);
+        }
+        return current.isWord;
     }
 
     /**
@@ -44,8 +67,32 @@ public class PrefixTree {
      * @return list of words with prefix
      */
     public ArrayList<String> getWordsForPrefix(String prefix){
-        //TODO: complete me
-        return null;
+        ArrayList<String> result = new ArrayList<>();
+        TreeNode current = root;
+
+        for (int i = 0; i < prefix.length(); i++) {
+            char character = prefix.charAt(i);
+
+            if (!current.children.containsKey(character)) {
+                return result;
+            }
+            current = current.children.get(character);
+        }
+        
+        Stack<Map.Entry<TreeNode, String>> stack = new Stack<>();
+        stack.push(Map.entry(current, prefix));
+        while (!stack.isEmpty()) {
+            Map.Entry<TreeNode, String> entry = stack.pop();
+            TreeNode node = entry.getKey();
+            String word = entry.getValue();
+            if (node.isWord) {
+                result.add(word);
+            }
+            for (Map.Entry<Character, TreeNode> child : node.children.entrySet()) {
+                stack.push(Map.entry(child.getValue(), word + child.getKey()));
+            }
+        }
+        return result;
     }
 
     /**
